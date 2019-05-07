@@ -143,12 +143,12 @@
 
 			<button
 					class="tify-scan_button"
-					:disabled="isMinZoom"
-					:title="'Zoom out'|trans"
+					:title="'Fullscreen'|trans"
 					@click="toggleFullscreen"
 			>
-				<icon name="zoom_out"/>
-				<span class="tify-sr-only">{{ 'Zoom out'|trans }}</span>
+				<!--<icon v-bind:name="isFullscreen"/>-->
+				<icon v-bind:name="fullscreenBtn" />
+				<span class="tify-sr-only">{{ 'Fullscreen'|trans }}</span>
 			</button>
 		</div>
 
@@ -198,6 +198,7 @@
 		data() {
 			return {
 				filtersVisible: false,
+				fullscreenBtn: 'fullscreen',
 				loadingTimeout: null,
 				screen: document.getElementById('tify'),
 				tileSources: {},
@@ -488,9 +489,11 @@
 				const isFullscreen = document.fullscreenElement;
 				if (isFullscreen !== null) {
 					if (document.exitFullscreen) {
+						this.fullscreenBtn = 'fullscreen';
 						document.exitFullscreen();
 					}
 				} else {
+					this.fullscreenBtn = 'fullscreen_exit';
 					this.screen.requestFullscreen();
 				}
 			},
