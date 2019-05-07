@@ -140,6 +140,16 @@
 					</p>
 				</div>
 			</div>
+
+			<button
+					class="tify-scan_button"
+					:disabled="isMinZoom"
+					:title="'Zoom out'|trans"
+					@click="toggleFullscreen"
+			>
+				<icon name="zoom_out"/>
+				<span class="tify-sr-only">{{ 'Zoom out'|trans }}</span>
+			</button>
 		</div>
 
 		<div class="tify-scan_image" id="tify-scan_image" ref="image"/>
@@ -189,6 +199,7 @@
 			return {
 				filtersVisible: false,
 				loadingTimeout: null,
+				screen: document.getElementById('tify'),
 				tileSources: {},
 				viewer: null,
 				zoomFactor: 1.5,
@@ -472,6 +483,16 @@
 			},
 			stopLoadingWatch() {
 				clearTimeout(this.loadingTimeout);
+			},
+			toggleFullscreen() {
+				const isFullscreen = document.fullscreenElement;
+				if (isFullscreen !== null) {
+					if (document.exitFullscreen) {
+						document.exitFullscreen();
+					}
+				} else {
+					this.screen.requestFullscreen();
+				}
 			},
 			updateFilterStyle() {
 				if (!this.filtersActive || !this.cssFiltersSupported) return;
