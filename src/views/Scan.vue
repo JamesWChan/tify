@@ -1,569 +1,602 @@
 <template>
-	<section class="tify-scan">
-		<h2 class="tify-sr-only">{{ 'Scan'|trans }}</h2>
+    <section class="tify-scan">
+        <h2 class="tify-sr-only">{{ 'Scan'|trans }}</h2>
 
-		<button
-			v-if="!customPageViewActive && !isFirstPage"
-			class="tify-scan_page-button -previous"
-			:title="'Previous page'|trans"
-			@click="goToPreviousPage"
-		>
-			<icon name="navigate_before"/>
-			<span class="tify-sr-only">{{ 'Previous page'|trans }}</span>
-		</button>
-		<button
-			v-if="!customPageViewActive && !isLastPage"
-			class="tify-scan_page-button -next"
-			:title="'Next page'|trans"
-			@click="goToNextPage"
-		>
-			<icon name="navigate_next"/>
-			<span class="tify-sr-only">{{ 'Next page'|trans }}</span>
-		</button>
+        <button
+                v-if="!customPageViewActive && !isFirstPage"
+                class="tify-scan_page-button -previous"
+                :title="'Previous page'|trans"
+                @click="goToPreviousPage"
+        >
+            <icon name="navigate_before"/>
+            <span class="tify-sr-only">{{ 'Previous page'|trans }}</span>
+        </button>
+        <button
+                v-if="!customPageViewActive && !isLastPage"
+                class="tify-scan_page-button -next"
+                :title="'Next page'|trans"
+                @click="goToNextPage"
+        >
+            <icon name="navigate_next"/>
+            <span class="tify-sr-only">{{ 'Next page'|trans }}</span>
+        </button>
 
-		<div class="tify-scan_buttons" v-if="viewer">
-			<button
-				class="tify-scan_button"
-				:disabled="isMaxZoom"
-				:title="'Zoom in'|trans"
-				@click="zoomIn"
-			>
-				<icon name="zoom_in"/>
-				<span class="tify-sr-only">{{ 'Zoom in'|trans }}</span>
-			</button>
-			<button
-				class="tify-scan_button"
-				:disabled="isReset"
-				:title="'Reset'|trans"
-				@click="resetView($event)"
-			>
-				<icon name="aspect_ratio"/>
-				<span class="tify-sr-only">{{ 'Reset'|trans }}</span>
-			</button>
-			<button
-				class="tify-scan_button"
-				:disabled="isMinZoom"
-				:title="'Zoom out'|trans"
-				@click="zoomOut"
-			>
-				<icon name="zoom_out"/>
-				<span class="tify-sr-only">{{ 'Zoom out'|trans }}</span>
-			</button>
+        <div class="tify-scan_buttons" v-if="viewer">
+            <button
+                    class="tify-scan_button"
+                    :disabled="isMaxZoom"
+                    :title="'Zoom in'|trans"
+                    @click="zoomIn"
+            >
+                <icon name="zoom_in"/>
+                <span class="tify-sr-only">{{ 'Zoom in'|trans }}</span>
+            </button>
+            <button
+                    class="tify-scan_button"
+                    :disabled="isReset"
+                    :title="'Reset'|trans"
+                    @click="resetView($event)"
+            >
+                <icon name="aspect_ratio"/>
+                <span class="tify-sr-only">{{ 'Reset'|trans }}</span>
+            </button>
+            <button
+                    class="tify-scan_button"
+                    :disabled="isMinZoom"
+                    :title="'Zoom out'|trans"
+                    @click="zoomOut"
+            >
+                <icon name="zoom_out"/>
+                <span class="tify-sr-only">{{ 'Zoom out'|trans }}</span>
+            </button>
 
-			<button
-				class="tify-scan_button"
-				:class="{ '-active': $root.params.rotation }"
-				:title="'Rotate'|trans"
-				@click="rotateRight($event)"
-			>
-				<icon name="rotate_right"/>
-				<span class="tify-sr-only">{{ 'Rotate'|trans }}</span>
-			</button>
+            <button
+                    class="tify-scan_button"
+                    :class="{ '-active': $root.params.rotation }"
+                    :title="'Rotate'|trans"
+                    @click="rotateRight($event)"
+            >
+                <icon name="rotate_right"/>
+                <span class="tify-sr-only">{{ 'Rotate'|trans }}</span>
+            </button>
 
-			<div
-				v-click-outside="closeFilters"
-				v-if="cssFiltersSupported"
-				class="tify-scan_filters"
-				:class="{ '-open': filtersVisible }"
-			>
-				<button
-					class="tify-scan_button"
-					:class="{ '-active': filtersActive }"
-					:title="'Toggle image filters'|trans"
-					@click="filtersVisible = !filtersVisible"
-				>
-					<icon name="tune"/>
-					<span class="tify-sr-only">{{ 'Toggle image filters'|trans }}</span>
-				</button>
-				<div class="tify-scan_filter-popup" v-show="filtersVisible">
-					<p>
-						<label for="tify-scan_brightness">
-							<icon name="wb_sunny" class="-light"/>
-							{{ 'Brightness:'|trans }}
-							{{ Math.round(($root.params.filters.brightness || 1) * 100) }}&nbsp;%
-						</label>
-						<input
-							class="tify-scan_range"
-							id="tify-scan_brightness"
-							max="2"
-							min=".5"
-							ref="firstSlider"
-							step=".01"
-							type="range"
-							:value="$root.params.filters.brightness || 1"
-							@input="setFilter('brightness', $event)"
-						>
-					</p>
-					<p>
-						<label for="tify-scan_contrast">
-							<icon name="brightness_medium" class="-light"/>
-							{{ 'Contrast:'|trans }}
-							{{ Math.round(($root.params.filters.contrast || 1) * 100) }}&nbsp;%
-						</label>
-						<input
-							class="tify-scan_range"
-							id="tify-scan_contrast"
-							max="2"
-							min=".5"
-							step=".01"
-							type="range"
-							:value="$root.params.filters.contrast || 1"
-							@input="setFilter('contrast', $event)"
-						>
-					</p>
-					<p>
-						<label for="tify-scan_saturation">
-							<icon name="palette" class="-light"/>
-							{{ 'Saturation:'|trans }}
-							{{ Math.round($root.params.filters.saturate * 100 || 100)}}&nbsp;%
-						</label>
-						<input
-							class="tify-scan_range"
-							id="tify-scan_saturation"
-							max="3"
-							min="0"
-							step=".01"
-							type="range"
-							:value="$root.params.filters.saturate || 1"
-							@input="setFilter('saturate', $event)"
-						>
-					</p>
-					<p>
-						<button
-							class="tify-scan_reset"
-							:disabled="!filtersActive"
-							@click="resetFilters"
-						>
-							<icon name="settings_backup_restore"/>
-							{{ 'Reset'|trans }}
-						</button>
-					</p>
-				</div>
-			</div>
+            <div
+                    v-click-outside="closeFilters"
+                    v-if="cssFiltersSupported"
+                    class="tify-scan_filters"
+                    :class="{ '-open': filtersVisible }"
+            >
+                <button
+                        class="tify-scan_button"
+                        :class="{ '-active': filtersActive }"
+                        :title="'Toggle image filters'|trans"
+                        @click="filtersVisible = !filtersVisible"
+                >
+                    <icon name="tune"/>
+                    <span class="tify-sr-only">{{ 'Toggle image filters'|trans }}</span>
+                </button>
+                <div class="tify-scan_filter-popup" v-show="filtersVisible">
+                    <p>
+                        <label for="tify-scan_brightness">
+                            <icon name="wb_sunny" class="-light"/>
+                            {{ 'Brightness:'|trans }}
+                            {{ Math.round(($root.params.filters.brightness || 1) * 100) }}&nbsp;%
+                        </label>
+                        <input
+                                class="tify-scan_range"
+                                id="tify-scan_brightness"
+                                max="2"
+                                min=".5"
+                                ref="firstSlider"
+                                step=".01"
+                                type="range"
+                                :value="$root.params.filters.brightness || 1"
+                                @input="setFilter('brightness', $event)"
+                        >
+                    </p>
+                    <p>
+                        <label for="tify-scan_contrast">
+                            <icon name="brightness_medium" class="-light"/>
+                            {{ 'Contrast:'|trans }}
+                            {{ Math.round(($root.params.filters.contrast || 1) * 100) }}&nbsp;%
+                        </label>
+                        <input
+                                class="tify-scan_range"
+                                id="tify-scan_contrast"
+                                max="2"
+                                min=".5"
+                                step=".01"
+                                type="range"
+                                :value="$root.params.filters.contrast || 1"
+                                @input="setFilter('contrast', $event)"
+                        >
+                    </p>
+                    <p>
+                        <label for="tify-scan_saturation">
+                            <icon name="palette" class="-light"/>
+                            {{ 'Saturation:'|trans }}
+                            {{ Math.round($root.params.filters.saturate * 100 || 100)}}&nbsp;%
+                        </label>
+                        <input
+                                class="tify-scan_range"
+                                id="tify-scan_saturation"
+                                max="3"
+                                min="0"
+                                step=".01"
+                                type="range"
+                                :value="$root.params.filters.saturate || 1"
+                                @input="setFilter('saturate', $event)"
+                        >
+                    </p>
+                    <p>
+                        <button
+                                class="tify-scan_reset"
+                                :disabled="!filtersActive"
+                                @click="resetFilters"
+                        >
+                            <icon name="settings_backup_restore"/>
+                            {{ 'Reset'|trans }}
+                        </button>
+                    </p>
+                </div>
+            </div>
 
-			<button
-					class="tify-scan_button"
-					:title="'Fullscreen'|trans"
-					@click="toggleFullscreen"
-			>
-				<!--<icon v-bind:name="isFullscreen"/>-->
-				<icon v-bind:name="fullscreenBtn" />
-				<span class="tify-sr-only">{{ 'Fullscreen'|trans }}</span>
-			</button>
-		</div>
+            <template v-if="detectFullscreen !== false">
+                <button
+                        class="tify-scan_button"
+                        :title="fullscreenActive ? 'Exit fullscreen' : 'Fullscreen'"
+                        @click="toggleFullscreen"
+                >
+                    <icon v-bind:name="fullscreenActive ? 'fullscreen_exit': 'fullscreen'"/>
+                    <span class="tify-sr-only">{{ 'Fullscreen'|trans }}</span>
+                </button>
+            </template>
+        </div>
 
-		<div class="tify-scan_image" id="tify-scan_image" ref="image"/>
-	</section>
+        <div class="tify-scan_image" id="tify-scan_image" ref="image"/>
+    </section>
 </template>
 
 <script>
-	import OpenSeadragon from '@/../openseadragon/src/openseadragon';
+    import OpenSeadragon from '@/../openseadragon/src/openseadragon';
 
-	import keyboard from '@/mixins/keyboard';
-	import pagination from '@/mixins/pagination';
+    import keyboard from '@/mixins/keyboard';
+    import pagination from '@/mixins/pagination';
 
-	// TODO: Is there another way to make OpenSeadragon available to imports below?
-	window.OpenSeadragon = OpenSeadragon;
+    // TODO: Is there another way to make OpenSeadragon available to imports below?
+    window.OpenSeadragon = OpenSeadragon;
 
-	// Custom-build OpenSeadragon. Order is important!
-	require('@/../openseadragon/src/controldock');
-	require('@/../openseadragon/src/eventsource');
+    // Custom-build OpenSeadragon. Order is important!
+    require('@/../openseadragon/src/controldock');
+    require('@/../openseadragon/src/eventsource');
 
-	require('@/../openseadragon/src/tilesource');
+    require('@/../openseadragon/src/tilesource');
 
-	require('@/../openseadragon/src/iiiftilesource');
+    require('@/../openseadragon/src/iiiftilesource');
 
-	require('@/../openseadragon/src/drawer');
-	require('@/../openseadragon/src/imageloader');
-	require('@/../openseadragon/src/mousetracker');
-	require('@/../openseadragon/src/placement');
-	require('@/../openseadragon/src/point');
-	require('@/../openseadragon/src/spring');
-	require('@/../openseadragon/src/tile');
-	require('@/../openseadragon/src/tilecache');
-	require('@/../openseadragon/src/tiledimage');
-	require('@/../openseadragon/src/rectangle');
-	require('@/../openseadragon/src/viewer');
-	require('@/../openseadragon/src/viewport');
-	require('@/../openseadragon/src/world');
+    require('@/../openseadragon/src/drawer');
+    require('@/../openseadragon/src/imageloader');
+    require('@/../openseadragon/src/mousetracker');
+    require('@/../openseadragon/src/placement');
+    require('@/../openseadragon/src/point');
+    require('@/../openseadragon/src/spring');
+    require('@/../openseadragon/src/tile');
+    require('@/../openseadragon/src/tilecache');
+    require('@/../openseadragon/src/tiledimage');
+    require('@/../openseadragon/src/rectangle');
+    require('@/../openseadragon/src/viewer');
+    require('@/../openseadragon/src/viewport');
+    require('@/../openseadragon/src/world');
 
-	const gapBetweenPages = .01;
-	const vendorPrefixes = ['-webkit-', '-moz-', '-o-', '-ms-'];
+    const gapBetweenPages = .01;
+    const vendorPrefixes = ['-webkit-', '-moz-', '-o-', '-ms-'];
 
-	export default {
-		mixins: [
-			keyboard,
-			pagination,
-		],
-		data() {
-			return {
-				filtersVisible: false,
-				fullscreenBtn: 'fullscreen',
-				loadingTimeout: null,
-				screen: document.getElementById('tify'),
-				tileSources: {},
-				viewer: null,
-				zoomFactor: 1.5,
-			};
-		},
-		computed: {
-			cssFiltersSupported() {
-				// https://raw.githubusercontent.com/Modernizr/Modernizr/master/feature-detects/css/filters.js
-				const el = document.createElement('a');
-				el.style.cssText = vendorPrefixes.join('filter:blur(2px);');
-				// https://github.com/Modernizr/Modernizr/issues/615
-				// documentMode is needed for false positives in oldIE, please see issue above
-				return !!el.style.length
-					&& ((document.documentMode === undefined || document.documentMode > 9));
-			},
-			filtersActive() {
-				return (Object.keys(this.$root.params.filters).length > 0);
-			},
-			isMinZoom() {
-				if (!this.viewer) return true;
-				return this.viewer.viewport.getZoom() <= this.viewer.viewport.getMinZoom();
-			},
-			isMaxZoom() {
-				if (!this.viewer) return true;
-				return this.viewer.viewport.getZoom() >= this.viewer.viewport.getMaxZoom();
-			},
-			isReset() {
-				// There may be some tiny deviation from the target values
-				const homeBounds = this.viewer.viewport.getHomeBounds();
-				const currentBounds = this.viewer.viewport.getBounds();
-				return (
-					Math.abs(homeBounds.height - currentBounds.height) < 1e-9
-					&& Math.abs(homeBounds.width - currentBounds.width) < 1e-9
-					&& Math.abs(homeBounds.x - currentBounds.x) < 1e-9
-					&& Math.abs(homeBounds.y - currentBounds.y) < 1e-9
-				);
-			},
-		},
-		watch: {
-			// eslint-disable-next-line func-names
-			'$root.params.pages': function (newValue, oldValue) {
-				const resetView = newValue.length !== oldValue.length;
-				this.loadImageInfo(resetView);
-			},
-		},
-		methods: {
-			closeFilters() {
-				this.filtersVisible = false;
-			},
-			initViewer(resetView) {
-				const { params } = this.$root;
+    export default {
+    	mixins: [
+    		keyboard,
+    		pagination,
+    	],
+    	data() {
+    		return {
+    			filtersVisible: false,
+    			fullscreenActive: false,
+    			loadingTimeout: null,
+    			screen: document.getElementById('tify'),
+    			tileSources: {},
+    			viewer: null,
+    			zoomFactor: 1.5,
+    		};
+    	},
+    	computed: {
+    		cssFiltersSupported() {
+    			// https://raw.githubusercontent.com/Modernizr/Modernizr/master/feature-detects/css/filters.js
+    			const el = document.createElement('a');
+    			el.style.cssText = vendorPrefixes.join('filter:blur(2px);');
+    			// https://github.com/Modernizr/Modernizr/issues/615
+    			// documentMode is needed for false positives in oldIE, please see issue above
+    			return !!el.style.length
+                    && ((document.documentMode === undefined || document.documentMode > 9));
+    		},
+    		filtersActive() {
+    			return (Object.keys(this.$root.params.filters).length > 0);
+    		},
+    		isMinZoom() {
+    			if (!this.viewer) return true;
+    			return this.viewer.viewport.getZoom() <= this.viewer.viewport.getMinZoom();
+    		},
+    		isMaxZoom() {
+    			if (!this.viewer) return true;
+    			return this.viewer.viewport.getZoom() >= this.viewer.viewport.getMaxZoom();
+    		},
+    		isReset() {
+    			// There may be some tiny deviation from the target values
+    			const homeBounds = this.viewer.viewport.getHomeBounds();
+    			const currentBounds = this.viewer.viewport.getBounds();
+    			return (
+    				Math.abs(homeBounds.height - currentBounds.height) < 1e-9
+                    && Math.abs(homeBounds.width - currentBounds.width) < 1e-9
+                    && Math.abs(homeBounds.x - currentBounds.x) < 1e-9
+                    && Math.abs(homeBounds.y - currentBounds.y) < 1e-9
+    			);
+    		},
+    	},
+    	watch: {
+    		// eslint-disable-next-line func-names
+    		'$root.params.pages': function (newValue, oldValue) {
+    			const resetView = newValue.length !== oldValue.length;
+    			this.loadImageInfo(resetView);
+    		},
+    	},
+    	methods: {
+    		closeFilters() {
+    			this.filtersVisible = false;
+    		},
+    		detectFullscreen: () => {
+    			let fullScreenAPI;
 
-				// TODO: All tile sources could be added at once (sequence mode)
-				// This requires the correct resolution to be present in the manifest, which is
-				// currently loaded from the info file since the former is unreliable.
-				const tileSources = [];
-				let initialWidth = 0;
-				let tileSourceIndex;
-				let totalWidth = 0;
-				params.pages.forEach((page, index) => {
-					let opacity = 1;
-					if (page < 1) {
-						opacity = 0;
-						tileSourceIndex = (index > 0 ? this.$root.pageCount : 1);
-					} else {
-						tileSourceIndex = page;
-					}
+    			switch (null) {
+    			case document.msFullscreenElement:
+    				fullScreenAPI = document.msFullscreenElement;
+    				break;
+    			case document.webkitFullscreenElement:
+    				fullScreenAPI = document.webkitFullscreenElement;
+    				break;
+    			case document.fullscreenElement:
+    				fullScreenAPI = document.fullscreenElement;
+    				break;
+    			default:
+    				fullScreenAPI = false;
+    			}
 
-					const tileSource = this.tileSources[tileSourceIndex];
+    			return fullScreenAPI;
+    		},
+    		initViewer(resetView) {
+    			const { params } = this.$root;
 
-					if (!tileSource) return;
+    			// TODO: All tile sources could be added at once (sequence mode)
+    			// This requires the correct resolution to be present in the manifest, which is
+    			// currently loaded from the info file since the former is unreliable.
+    			const tileSources = [];
+    			let initialWidth = 0;
+    			let tileSourceIndex;
+    			let totalWidth = 0;
+    			params.pages.forEach((page, index) => {
+    				let opacity = 1;
+    				if (page < 1) {
+    					opacity = 0;
+    					tileSourceIndex = (index > 0 ? this.$root.pageCount : 1);
+    				} else {
+    					tileSourceIndex = page;
+    				}
 
-					if (!initialWidth) initialWidth = tileSource.width;
-					const width = tileSource.width / initialWidth;
+    				const tileSource = this.tileSources[tileSourceIndex];
 
-					tileSources.push({
-						opacity,
-						tileSource,
-						width,
-						x: totalWidth,
-					});
+    				if (!tileSource) return;
 
-					totalWidth += width + gapBetweenPages;
-				});
+    				if (!initialWidth) initialWidth = tileSource.width;
+    				const width = tileSource.width / initialWidth;
 
-				if (this.viewer) {
-					this.viewer.addOnceHandler('open', () => {
-						if (this.isReset || resetView) {
-							this.resetView();
-						} else {
-							this.viewer.viewport.applyConstraints(true);
+    				tileSources.push({
+    					opacity,
+    					tileSource,
+    					width,
+    					x: totalWidth,
+    				});
 
-							// Move upper left corner into viewport if required
-							const bounds = this.viewer.viewport.getBounds();
-							if (bounds.x <= 0 && bounds.y <= 0) return;
+    				totalWidth += width + gapBetweenPages;
+    			});
 
-							const offsetX = (params.pages[0] ? 0 : 1);
-							this.viewer.viewport.panTo({
-								x: (bounds.x > 0 ? (bounds.width / 2) + offsetX : params.panX),
-								y: (bounds.y > 0 ? (bounds.height / 2) : params.panY),
-							});
-						}
-					});
+    			if (this.viewer) {
+    				this.viewer.addOnceHandler('open', () => {
+    					if (this.isReset || resetView) {
+    						this.resetView();
+    					} else {
+    						this.viewer.viewport.applyConstraints(true);
 
-					this.viewer.open(tileSources);
-					return;
-				}
+    						// Move upper left corner into viewport if required
+    						const bounds = this.viewer.viewport.getBounds();
+    						if (bounds.x <= 0 && bounds.y <= 0) return;
 
-				// https://openseadragon.github.io/examples/tilesource-iiif/
-				this.viewer = OpenSeadragon({
-					animationTime: .4,
-					id: 'tify-scan_image',
-					immediateRender: this.$root.options.immediateRender,
-					preload: !this.$root.isMobile(),
-					preserveImageSizeOnResize: true,
-					preserveViewport: true,
-					showNavigationControl: false,
-					showZoomControl: false,
-					tileSources,
-					visibilityRatio: .2,
-				});
+    						const offsetX = (params.pages[0] ? 0 : 1);
+    						this.viewer.viewport.panTo({
+    							x: (bounds.x > 0 ? (bounds.width / 2) + offsetX : params.panX),
+    							y: (bounds.y > 0 ? (bounds.height / 2) : params.panY),
+    						});
+    					}
+    				});
 
-				this.viewer.gestureSettingsMouse.clickToZoom = false;
+    				this.viewer.open(tileSources);
+    				return;
+    			}
 
-				this.viewer.addHandler('animation-finish', () => {
-					if (this.isReset) {
-						this.removeScanParams();
-						return;
-					}
+    			// https://openseadragon.github.io/examples/tilesource-iiif/
+    			this.viewer = OpenSeadragon({
+    				animationTime: .4,
+    				id: 'tify-scan_image',
+    				immediateRender: this.$root.options.immediateRender,
+    				preload: !this.$root.isMobile(),
+    				preserveImageSizeOnResize: true,
+    				preserveViewport: true,
+    				showNavigationControl: false,
+    				showZoomControl: false,
+    				tileSources,
+    				visibilityRatio: .2,
+    			});
 
-					const center = this.viewer.viewport.getCenter();
-					this.$root.updateParams({
-						// 3 decimals are sufficient, keeping URL short
-						panX: Math.round(center.x * 1e3) / 1e3,
-						panY: Math.round(center.y * 1e3) / 1e3,
-						zoom: Math.round(this.viewer.viewport.getZoom() * 1e3) / 1e3,
-					});
-				});
+    			this.viewer.gestureSettingsMouse.clickToZoom = false;
 
-				// Required for touchscreens:
-				// The canvas swallows the touch event, so click-outside is not triggered
-				this.viewer.addHandler('canvas-click', () => {
-					document.body.click();
-				});
+    			this.viewer.addHandler('animation-finish', () => {
+    				if (this.isReset) {
+    					this.removeScanParams();
+    					return;
+    				}
 
-				this.viewer.addHandler('open', () => {
-					this.startLoadingWatch();
+    				const center = this.viewer.viewport.getCenter();
+    				this.$root.updateParams({
+    					// 3 decimals are sufficient, keeping URL short
+    					panX: Math.round(center.x * 1e3) / 1e3,
+    					panY: Math.round(center.y * 1e3) / 1e3,
+    					zoom: Math.round(this.viewer.viewport.getZoom() * 1e3) / 1e3,
+    				});
+    			});
 
-					if (params.panX !== null && params.panY !== null) {
-						this.viewer.viewport.panTo({
-							x: params.panX,
-							y: params.panY,
-						}, true);
-						this.viewer.viewport.zoomTo(params.zoom, null, true);
-					} else {
-						this.viewer.viewport.goHome();
-					}
+    			// Required for touchscreens:
+    			// The canvas swallows the touch event, so click-outside is not triggered
+    			this.viewer.addHandler('canvas-click', () => {
+    				document.body.click();
+    			});
 
-					if (params.rotation !== null) {
-						this.viewer.viewport.setRotation(params.rotation);
-					}
-				});
+    			this.viewer.addHandler('open', () => {
+    				this.startLoadingWatch();
 
-				this.viewer.addHandler('tile-load-failed', (error) => {
-					this.$root.error = `Error loading image: ${error.message}`;
-				});
-			},
-			loadImageInfo(resetView = false) {
-				this.stopLoadingWatch();
+    				if (params.panX !== null && params.panY !== null) {
+    					this.viewer.viewport.panTo({
+    						x: params.panX,
+    						y: params.panY,
+    					}, true);
+    					this.viewer.viewport.zoomTo(params.zoom, null, true);
+    				} else {
+    					this.viewer.viewport.goHome();
+    				}
 
-				const infoPromises = [];
-				this.$root.params.pages.forEach((page) => {
-					if (page < 1 || this.tileSources[page]) return;
+    				if (params.rotation !== null) {
+    					this.viewer.viewport.setRotation(params.rotation);
+    				}
+    			});
 
-					const { resource } = this.$root.canvases[page - 1].images[0];
-					if (resource.service) {
-						const id = resource.service['@id'];
-						const infoUrl = `${id}${id.slice(-1) === '/' ? '' : '/'}info.json`;
-						infoPromises.push(this.$http.get(infoUrl).then((response) => {
-							response.page = page;
-							return response;
-						}, (error) => {
-							let status;
-							if (error.response && error.response.statusText) {
-								status = error.response.statusText;
-							} else if (error.message) {
-								status = error.message;
-							}
-							this.$root.error = `Error loading info file for page ${page}${status ? `: ${status}` : ''}`;
-						}));
-					} else {
-						this.tileSources[page] = {
-							type: 'image',
-							url: resource['@id'],
-							width: resource.width,
-							height: resource.height,
-						};
-					}
-				});
+    			this.viewer.addHandler('tile-load-failed', (error) => {
+    				this.$root.error = `Error loading image: ${error.message}`;
+    			});
+    		},
+    		loadImageInfo(resetView = false) {
+    			this.stopLoadingWatch();
 
-				if (infoPromises.length) {
-					Promise.all(infoPromises).then((responses) => {
-						responses.forEach((response) => {
-							if (response) this.tileSources[response.page] = response.data;
-						});
-						this.initViewer(resetView);
-					});
-				} else {
-					this.initViewer(resetView);
-				}
-			},
-			propagateKeyPress(event) {
-				if (event.target.className.indexOf('openseadragon') === 0) return;
+    			const infoPromises = [];
+    			this.$root.params.pages.forEach((page) => {
+    				if (page < 1 || this.tileSources[page]) return;
 
-				const canvas = this.$refs.image.querySelector('.openseadragon-canvas');
-				if (!canvas) return;
+    				const { resource } = this.$root.canvases[page - 1].images[0];
+    				if (resource.service) {
+    					const id = resource.service['@id'];
+    					const infoUrl = `${id}${id.slice(-1) === '/' ? '' : '/'}info.json`;
+    					infoPromises.push(this.$http.get(infoUrl).then((response) => {
+    						response.page = page;
+    						return response;
+    					}, (error) => {
+    						let status;
+    						if (error.response && error.response.statusText) {
+    							status = error.response.statusText;
+    						} else if (error.message) {
+    							status = error.message;
+    						}
+    						this.$root.error = `Error loading info file for page ${page}${status ? `: ${status}` : ''}`;
+    					}));
+    				} else {
+    					this.tileSources[page] = {
+    						type: 'image',
+    						url: resource['@id'],
+    						width: resource.width,
+    						height: resource.height,
+    					};
+    				}
+    			});
 
-				const canvasEvent = new event.constructor(event.type, event);
+    			if (infoPromises.length) {
+    				Promise.all(infoPromises).then((responses) => {
+    					responses.forEach((response) => {
+    						if (response) this.tileSources[response.page] = response.data;
+    					});
+    					this.initViewer(resetView);
+    				});
+    			} else {
+    				this.initViewer(resetView);
+    			}
+    		},
+    		propagateKeyPress(event) {
+    			if (event.target.className.indexOf('openseadragon') === 0) return;
 
-				// Chrome fix: OpenSeadragon evaluates keyCode
-				Object.defineProperty(canvasEvent, 'keyCode', {
-					get() {
-						return event.keyCode;
-					},
-				});
+    			const canvas = this.$refs.image.querySelector('.openseadragon-canvas');
+    			if (!canvas) return;
 
-				canvas.dispatchEvent(canvasEvent);
-			},
-			resetFilters() {
-				this.$refs.image.style.cssText = '';
-				this.$root.updateParams({ filters: {} });
-			},
-			removeScanParams() {
-				this.$root.updateParams({
-					panX: null,
-					panY: null,
-					zoom: null,
-				});
-			},
-			resetView(event) {
-				if (event && event.shiftKey) {
-					// Rotation has to be reset before pan and zoom
-					this.viewer.viewport.setRotation(0);
-					this.$root.updateParams({ rotation: null });
-					if (this.filtersActive) this.resetFilters();
-				}
+    			const canvasEvent = new event.constructor(event.type, event);
 
-				this.viewer.viewport.goHome();
-				this.removeScanParams();
-			},
-			rotateRight(event) {
-				const { viewport } = this.viewer;
-				const degrees = (event && event.shiftKey) ? 0 : (viewport.getRotation() + 90) % 360;
-				viewport.setRotation(degrees);
-				this.$root.updateParams({ rotation: degrees || null });
-			},
-			setFilter(name, event) {
-				const value = event.target.valueAsNumber;
-				if (value === 1) {
-					this.$delete(this.$root.params.filters, name);
-				} else {
-					this.$set(this.$root.params.filters, name, value);
-				}
-				this.$root.updateParams({ filters: this.$root.params.filters });
-				this.updateFilterStyle();
-			},
-			startLoadingWatch() {
-				let loading = 0;
-				for (let i = this.viewer.world.getItemCount() - 1; i >= 0; i -= 1) {
-					const image = this.viewer.world.getItemAt(i);
-					// eslint-disable-next-line no-underscore-dangle
-					if (image && image._tilesLoading) loading = 1;
-				}
-				this.$root.loading = loading;
+    			// Chrome fix: OpenSeadragon evaluates keyCode
+    			Object.defineProperty(canvasEvent, 'keyCode', {
+    				get() {
+    					return event.keyCode;
+    				},
+    			});
 
-				// TODO: A timeout instead of a proper event handler? Abomination! That's because
-				// neither getFullyLoaded() nor the fully-loaded-change event are working for images
-				// that are not currently within canvas bounds. OpenSeadragon, get your shit
-				// together, and add a global fully-loaded event, not just for each TiledImage.
-				this.loadingTimeout = setTimeout(this.startLoadingWatch, 200);
-			},
-			stopLoadingWatch() {
-				clearTimeout(this.loadingTimeout);
-			},
-			toggleFullscreen() {
-				const isFullscreen = document.fullscreenElement;
-				if (isFullscreen !== null) {
-					if (document.exitFullscreen) {
-						this.fullscreenBtn = 'fullscreen';
-						document.exitFullscreen();
-					}
-				} else {
-					this.fullscreenBtn = 'fullscreen_exit';
-					this.screen.requestFullscreen();
-				}
-			},
-			updateFilterStyle() {
-				if (!this.filtersActive || !this.cssFiltersSupported) return;
+    			canvas.dispatchEvent(canvasEvent);
+    		},
+    		resetFilters() {
+    			this.$refs.image.style.cssText = '';
+    			this.$root.updateParams({ filters: {} });
+    		},
+    		removeScanParams() {
+    			this.$root.updateParams({
+    				panX: null,
+    				panY: null,
+    				zoom: null,
+    			});
+    		},
+    		resetView(event) {
+    			if (event && event.shiftKey) {
+    				// Rotation has to be reset before pan and zoom
+    				this.viewer.viewport.setRotation(0);
+    				this.$root.updateParams({ rotation: null });
+    				if (this.filtersActive) this.resetFilters();
+    			}
 
-				const filters = [];
-				Object.keys(this.$root.params.filters).forEach((key) => {
-					filters.push(`${key}(${this.$root.params.filters[key]})`);
-				});
+    			this.viewer.viewport.goHome();
+    			this.removeScanParams();
+    		},
+    		rotateRight(event) {
+    			const { viewport } = this.viewer;
+    			const degrees = (event && event.shiftKey) ? 0 : (viewport.getRotation() + 90) % 360;
+    			viewport.setRotation(degrees);
+    			this.$root.updateParams({ rotation: degrees || null });
+    		},
+    		setFilter(name, event) {
+    			const value = event.target.valueAsNumber;
+    			if (value === 1) {
+    				this.$delete(this.$root.params.filters, name);
+    			} else {
+    				this.$set(this.$root.params.filters, name, value);
+    			}
+    			this.$root.updateParams({ filters: this.$root.params.filters });
+    			this.updateFilterStyle();
+    		},
+    		startLoadingWatch() {
+    			let loading = 0;
+    			for (let i = this.viewer.world.getItemCount() - 1; i >= 0; i -= 1) {
+    				const image = this.viewer.world.getItemAt(i);
+    				// eslint-disable-next-line no-underscore-dangle
+    				if (image && image._tilesLoading) loading = 1;
+    			}
+    			this.$root.loading = loading;
 
-				const { image } = this.$refs;
-				const filterString = filters.join(' ');
+    			// TODO: A timeout instead of a proper event handler? Abomination! That's because
+    			// neither getFullyLoaded() nor the fully-loaded-change event are working for images
+    			// that are not currently within canvas bounds. OpenSeadragon, get your shit
+    			// together, and add a global fully-loaded event, not just for each TiledImage.
+    			this.loadingTimeout = setTimeout(this.startLoadingWatch, 200);
+    		},
+    		stopLoadingWatch() {
+    			clearTimeout(this.loadingTimeout);
+    		},
+    		toggleFullscreen() {
+    			this.toggleFullscreenActive();
+    			if (this.detectFullscreen() !== null) {
+    				if (document.exitFullscreen) {
+    					document.exitFullscreen();
+    				} else if (document.mozCancelFullScreen) { // Firefox
+    					document.mozCancelFullScreen();
+    				} else if (document.webkitExitFullscreen) { // Chrome, Safari and Opera
+    					document.webkitExitFullscreen();
+    				} else if (document.msExitFullscreen) { // IE/Edge
+    					document.msExitFullscreen();
+    				}
+    			} else if (this.screen.requestFullscreen) {
+				this.screen.requestFullscreen();
+    			} else if (this.screen.mozRequestFullScreen) { // Firefox
+    				this.screen.mozRequestFullScreen();
+    			} else if (this.screen.webkitRequestFullscreen) { // Chrome, Safari and Opera
+    				this.screen.webkitRequestFullscreen();
+    			} else if (this.screen.msRequestFullscreen) { // IE/Edge
+    				this.screen.msRequestFullscreen();
+    			}
+    		},
+    		toggleFullscreenActive() {
+    			this.fullscreenActive = !this.fullscreenActive;
+    		},
+    		updateFilterStyle() {
+    			if (!this.filtersActive || !this.cssFiltersSupported) return;
 
-				image.style.cssText = vendorPrefixes.join(`filter:${filterString};`);
-			},
-			zoomIn() {
-				this.viewer.viewport.zoomBy(this.zoomFactor);
-			},
-			zoomOut() {
-				this.viewer.viewport.zoomBy(1 / this.zoomFactor);
-			},
-		},
-		mounted() {
-			this.loadImageInfo();
-			this.updateFilterStyle();
+    			const filters = [];
+    			Object.keys(this.$root.params.filters).forEach((key) => {
+    				filters.push(`${key}(${this.$root.params.filters[key]})`);
+    			});
 
-			window.addEventListener('keydown', (event) => {
-				if (event.key === 'Escape') {
-					this.filtersVisible = false;
-				}
+    			const { image } = this.$refs;
+    			const filterString = filters.join(' ');
 
-				// Reset pan, zoom, rotation and filters
-				const zeroKeyCodes = [
-					45, // Insert (Shift+Numpad0)
-					48, // 0
-					96, // Numpad0
-				];
+    			image.style.cssText = vendorPrefixes.join(`filter:${filterString};`);
+    		},
+    		zoomIn() {
+    			this.viewer.viewport.zoomBy(this.zoomFactor);
+    		},
+    		zoomOut() {
+    			this.viewer.viewport.zoomBy(1 / this.zoomFactor);
+    		},
+    	},
+    	mounted() {
+    		this.loadImageInfo();
+    		this.updateFilterStyle();
 
-				if (event.shiftKey && zeroKeyCodes.indexOf(event.keyCode) > -1) {
-					this.resetView(event);
-				}
-			});
+    		window.addEventListener('keydown', (event) => {
+    			if (event.key === 'Escape') {
+    				this.filtersVisible = false;
+    			}
 
-			window.addEventListener('keypress', (event) => {
-				if (this.preventKeyboardEvent(event)) return;
+    			// Reset pan, zoom, rotation and filters
+    			const zeroKeyCodes = [
+    				45, // Insert (Shift+Numpad0)
+    				48, // 0
+    				96, // Numpad0
+    			];
 
-				switch (event.key) {
-				case 'r':
-				case 'R':
-					// NOTE: Same physical key for QUERTY and QUERTZ keyboards
-					this.rotateRight(event);
-					break;
-				case 'f':
-					this.filtersVisible = !this.filtersVisible;
-					if (this.filtersVisible) {
-						this.$nextTick(() => {
-							this.$refs.firstSlider.focus();
-						});
-					}
-					break;
-				case 'F': {
-					this.resetFilters();
-					break;
-				}
-				default:
-					// Send to OpenSeadragon
-					this.propagateKeyPress(event);
-				}
-			});
-		},
-	};
+    			if (event.shiftKey && zeroKeyCodes.indexOf(event.keyCode) > -1) {
+    				this.resetView(event);
+    			}
+    		});
+
+    		window.addEventListener('keypress', (event) => {
+    			if (this.preventKeyboardEvent(event)) return;
+
+    			switch (event.key) {
+    			case 'r':
+    			case 'R':
+    				// NOTE: Same physical key for QUERTY and QUERTZ keyboards
+    				this.rotateRight(event);
+    				break;
+    			case 'f':
+    				this.filtersVisible = !this.filtersVisible;
+    				if (this.filtersVisible) {
+    					this.$nextTick(() => {
+    						this.$refs.firstSlider.focus();
+    					});
+    				}
+    				break;
+    			case 'F': {
+    				this.resetFilters();
+    				break;
+    			}
+    			default:
+    				// Send to OpenSeadragon
+    				this.propagateKeyPress(event);
+    			}
+    		});
+    	},
+    };
 </script>
