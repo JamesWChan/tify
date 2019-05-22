@@ -506,7 +506,7 @@
     			clearTimeout(this.loadingTimeout);
     		},
     		toggleFullscreen() {
-    			this.toggleFullscreenActive();
+    			this.fullscreenActive = !this.fullscreenActive;
     			if (this.detectFullscreen() !== null) {
     				if (document.exitFullscreen) {
     					document.exitFullscreen();
@@ -526,9 +526,6 @@
     			} else if (this.screen.msRequestFullscreen) { // IE/Edge
     				this.screen.msRequestFullscreen();
     			}
-    		},
-    		toggleFullscreenActive() {
-    			this.fullscreenActive = !this.fullscreenActive;
     		},
     		updateFilterStyle() {
     			if (!this.filtersActive || !this.cssFiltersSupported) return;
@@ -592,6 +589,10 @@
     				this.resetFilters();
     				break;
     			}
+    			case 'u':
+    			case 'U':
+    				this.toggleFullscreen();
+    				break;
     			default:
     				// Send to OpenSeadragon
     				this.propagateKeyPress(event);
