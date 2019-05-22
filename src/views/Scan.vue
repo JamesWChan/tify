@@ -142,14 +142,26 @@
             </div>
 
             <template v-if="detectFullscreen !== false">
-                <button
-                        class="tify-scan_button"
-                        :title="fullscreenActive ? 'Exit fullscreen' : 'Fullscreen'"
-                        @click="toggleFullscreen"
-                >
-                    <icon v-bind:name="fullscreenActive ? 'fullscreen_exit': 'fullscreen'"/>
-                    <span class="tify-sr-only">{{ 'Fullscreen'|trans }}</span>
-                </button>
+                <template v-if="fullscreenActive">
+                    <button
+                            class="tify-scan_button exit_fullscreen"
+                            :title="'Exit fullscreen'|trans"
+                            @click="toggleFullscreen"
+                    >
+                        <icon name="fullscreen_exit"/>
+                        <span class="tify-sr-only">{{ 'Exit fullscreen'|trans }}</span>
+                    </button>
+                </template>
+                <template v-if="fullscreenActive === false">
+                    <button
+                            class="tify-scan_button fullscreen"
+                            :title="'Fullscreen'|trans"
+                            @click="toggleFullscreen"
+                    >
+                        <icon name="fullscreen"/>
+                        <span class="tify-sr-only">{{ 'Fullscreen'|trans }}</span>
+                    </button>
+                </template>
             </template>
         </div>
 
@@ -252,23 +264,23 @@
     			this.filtersVisible = false;
     		},
     		detectFullscreen: () => {
-    			let fullScreenAPI;
+    			let fullscreenAPI;
 
     			switch (null) {
     			case document.msFullscreenElement:
-    				fullScreenAPI = document.msFullscreenElement;
+    				fullscreenAPI = document.msFullscreenElement;
     				break;
     			case document.webkitFullscreenElement:
-    				fullScreenAPI = document.webkitFullscreenElement;
+    				fullscreenAPI = document.webkitFullscreenElement;
     				break;
     			case document.fullscreenElement:
-    				fullScreenAPI = document.fullscreenElement;
+    				fullscreenAPI = document.fullscreenElement;
     				break;
     			default:
-    				fullScreenAPI = false;
+    				fullscreenAPI = false;
     			}
 
-    			return fullScreenAPI;
+    			return fullscreenAPI;
     		},
     		initViewer(resetView) {
     			const { params } = this.$root;
@@ -506,7 +518,7 @@
     			clearTimeout(this.loadingTimeout);
     		},
     		toggleFullscreen() {
-    			this.toggleFullscreenActive();
+    			this.fullscreenActive = !this.fullscreenActive;
     			if (this.detectFullscreen() !== null) {
     				if (document.exitFullscreen) {
     					document.exitFullscreen();
@@ -526,9 +538,6 @@
     			} else if (this.screen.msRequestFullscreen) { // IE/Edge
     				this.screen.msRequestFullscreen();
     			}
-    		},
-    		toggleFullscreenActive() {
-    			this.fullscreenActive = !this.fullscreenActive;
     		},
     		updateFilterStyle() {
     			if (!this.filtersActive || !this.cssFiltersSupported) return;
@@ -576,6 +585,7 @@
 
     			switch (event.key) {
     			case 'r':
+    			case 'g':
     			case 'R':
     				// NOTE: Same physical key for QUERTY and QUERTZ keyboards
     				this.rotateRight(event);
@@ -592,6 +602,10 @@
     				this.resetFilters();
     				break;
     			}
+    			case 'u':
+    			case 'U':
+    				this.toggleFullscreen();
+    				break;
     			default:
     				// Send to OpenSeadragon
     				this.propagateKeyPress(event);
